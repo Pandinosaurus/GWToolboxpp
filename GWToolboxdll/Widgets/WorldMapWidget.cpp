@@ -97,7 +97,13 @@ namespace {
 
     std::string BossInfo(const EliteBossLocation* boss)
     {
-        auto str = std::format("{} - {}\n{}", boss->boss_name, Resources::GetSkillName(boss->skill_id)->string(), Resources::GetMapName(boss->map_id)->string());
+        auto str = std::format(
+            "{} - {}\n{}{}",
+            boss->boss_name,
+            Resources::GetSkillName(boss->skill_id)->string(),
+            Resources::GetMapName(boss->map_id)->string(),
+            boss->mission ? " (Mission)" : ""
+        );
         if (boss->note) {
             str += std::format("\n{}", boss->note);
         }
