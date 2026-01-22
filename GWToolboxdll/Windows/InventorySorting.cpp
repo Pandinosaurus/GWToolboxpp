@@ -272,64 +272,68 @@ void InventorySorting::DrawSettingsInternal()
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
-    const auto cursor_y = ImGui::GetCursorPosY();
-    ImGui::TextUnformatted("Sort your inventory by item type.");
-    ImGui::TextDisabled("Configure the order in which item types should be sorted.");
 
-    const auto original_pos = ImGui::GetCursorPos();
-    ImGui::SetCursorPos({ImGui::GetContentRegionAvail().x - 200.f, cursor_y});
-
-    if (ImGui::Button("Sort Inventory!", ImVec2(200.f, 0))) {
+    bool open = ImGui::CollapsingHeader("Change Storage Inventory Sorting Order", ImGuiTreeNodeFlags_SpanTextWidth);
+    ImGui::SameLine(0.f, 20.f);
+    bool sort_inv = false;
+    if (ImGui::ConfirmButton("Sort Storage Inventory!", &sort_inv)) {
         SortInventoryByType();
     }
-    ImGui::SetCursorPos(original_pos);
-    ImGui::BeginChild("sort_order_list", ImVec2(0, 350), true);
+    if (open) {
 
-    for (size_t i = 0; i < sort_order.size(); i++) {
-        ImGui::PushID(static_cast<int>(i));
+        ImGui::TextUnformatted("Sort your inventory by item type.");
+        ImGui::TextDisabled("Configure the order in which item types should be sorted.");
 
-        const char* type_name = GetItemTypeName(sort_order[i]);
+        ImGui::BeginChild("sort_order_list", ImVec2(0, 350), true);
 
-        // Up arrow button
-        if (i > 0) {
-            if (ImGui::Button(ICON_FA_ARROW_UP)) {
-                std::swap(sort_order[i], sort_order[i - 1]);
+        for (size_t i = 0; i < sort_order.size(); i++) {
+            ImGui::PushID(static_cast<int>(i));
+
+            const char* type_name = GetItemTypeName(sort_order[i]);
+
+            // Up arrow button
+            if (i > 0) {
+                if (ImGui::Button(ICON_FA_ARROW_UP)) {
+                    std::swap(sort_order[i], sort_order[i - 1]);
+                }
             }
-        }
-        else {
-            ImGui::BeginDisabled();
-            ImGui::Button(ICON_FA_ARROW_UP);
-            ImGui::EndDisabled();
-        }
-
-        ImGui::SameLine();
-
-        // Down arrow button
-        if (i < sort_order.size() - 1) {
-            if (ImGui::Button(ICON_FA_ARROW_DOWN)) {
-                std::swap(sort_order[i], sort_order[i + 1]);
+            else {
+                ImGui::BeginDisabled();
+                ImGui::Button(ICON_FA_ARROW_UP);
+                ImGui::EndDisabled();
             }
-        }
-        else {
-            ImGui::BeginDisabled();
-            ImGui::Button(ICON_FA_ARROW_DOWN);
-            ImGui::EndDisabled();
+
+            ImGui::SameLine();
+
+            // Down arrow button
+            if (i < sort_order.size() - 1) {
+                if (ImGui::Button(ICON_FA_ARROW_DOWN)) {
+                    std::swap(sort_order[i], sort_order[i + 1]);
+                }
+            }
+            else {
+                ImGui::BeginDisabled();
+                ImGui::Button(ICON_FA_ARROW_DOWN);
+                ImGui::EndDisabled();
+            }
+
+            ImGui::SameLine();
+            ImGui::Text("%2zu. %s", i + 1, type_name);
+
+            ImGui::PopID();
         }
 
-        ImGui::SameLine();
-        ImGui::Text("%2zu. %s", i + 1, type_name);
+        ImGui::EndChild();
 
-        ImGui::PopID();
+        ImGui::Spacing();
+        bool reset = false;
+        if (ImGui::ConfirmButton("Reset Sort Order", &reset)) {
+            ResetSortOrder();
+        }
     }
-
-    ImGui::EndChild();
-
     ImGui::Spacing();
-
-    if (ImGui::Button("Reset Sort Order", ImVec2(200, 0))) {
-        ResetSortOrder();
-    }
-    ImGui::ShowHelp("Reset to the default sort order.");
+    ImGui::Separator();
+    ImGui::Spacing();
 }
 
 void InventorySorting::CancelSort()
