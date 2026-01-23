@@ -92,12 +92,41 @@ namespace {
     ImDrawList* draw_list = nullptr;
 
 
+    static bool IsMissionMap(GW::Constants::MapID id, const GW::AreaInfo* info = nullptr) {
+        if (!info) info = GW::Map::GetMapInfo(id);
+        if (!info) return false;
+        const auto t = info->type;
+        return (t == GW::RegionType::MissionOutpost ||
+                t == GW::RegionType::EotnMission ||
+                t == GW::RegionType::CooperativeMission);
+    }
 
+    static bool IsChallengeMap(GW::Constants::MapID id, const GW::AreaInfo* info = nullptr) {
+        if (!info) info = GW::Map::GetMapInfo(id);
+        if (!info) return false;
+        return info->type == GW::RegionType::Challenge;
+    }
     
 
     std::string BossInfo(const EliteBossLocation* boss)
     {
-        auto str = std::format("{} - {}\n{}", boss->boss_name, Resources::GetSkillName(boss->skill_id)->string(), Resources::GetMapName(boss->map_id)->string());
+        const auto map_info = GW::Map::GetMapInfo(boss->map_id);
+        std::string mission_suffix;
+        if (map_info) {
+            if (IsMissionMap(boss->map_id, map_info)) {
+                mission_suffix = " (Mission)";
+            } else if (IsChallengeMap(boss->map_id, map_info)) {
+                mission_suffix = " (Challenge)";
+            }
+        }
+
+        auto str = std::format(
+            "{} - {}\n{}{}",
+            boss->boss_name,
+            Resources::GetSkillName(boss->skill_id)->string(),
+            Resources::GetMapName(boss->map_id)->string(),
+            mission_suffix
+        );
         if (boss->note) {
             str += std::format("\n{}", boss->note);
         }
