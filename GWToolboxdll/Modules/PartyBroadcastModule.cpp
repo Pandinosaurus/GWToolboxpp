@@ -383,8 +383,7 @@ namespace {
 
     void OnUIMessage(GW::HookStatus*, GW::UI::UIMessage, void*, void*)
     {
-        if (!need_to_send_party_searches)
-            need_to_send_party_searches = TIMER_INIT();
+        need_to_send_party_searches = TIMER_INIT();
     }
 } // namespace
 
@@ -407,7 +406,7 @@ void PartyBroadcast::Update(float)
         return;
     }
 
-    if (need_to_send_party_searches && TIMER_DIFF(need_to_send_party_searches) > 500 && send_changed_party_searches()) {
+    if (need_to_send_party_searches && TIMER_DIFF(need_to_send_party_searches) > 250 && send_changed_party_searches()) {
         need_to_send_party_searches = 0;
     }
 }
@@ -434,7 +433,7 @@ void PartyBroadcast::Initialize()
     }
     pending_websocket_disconnect = terminating = false;
 
-    need_to_send_party_searches = true;
+    need_to_send_party_searches = TIMER_INIT();
 
     const GW::UI::UIMessage ui_messages[] = {
         GW::UI::UIMessage::kMapLoaded,           
