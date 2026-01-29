@@ -37,6 +37,8 @@ namespace {
     GW::HookEntry post_ui_message_entry;
     bool initialised = false;
 
+    clock_t last_fetched_missing_quest_info = 0;
+
     bool double_click_to_travel_to_quest = true;
 
     GW::Constants::QuestID custom_quest_id = static_cast<GW::Constants::QuestID>(0x0000fdd);
@@ -735,12 +737,14 @@ bool QuestModule::CanTerminate()
 
 void QuestModule::FetchMissingQuestInfo()
 {
+    if (TIMER_DIFF(last_fetched_missing_quest_info) < 250) return;
+    last_fetched_missing_quest_info = TIMER_INIT();
     GW::GameThread::Enqueue([] {
         const auto quest_log = GW::QuestMgr::GetQuestLog();
         if (!quest_log) return;
         for (auto& quest : *quest_log) {
             if ((quest.log_state & 1) == 0) {
-                GW::QuestMgr::RequestQuestInfo(&quest);
+                GW::QuestMgr::RequestQuestInfo(&quest, true);
             }
         }
     });
