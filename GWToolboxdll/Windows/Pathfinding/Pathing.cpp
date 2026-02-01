@@ -84,16 +84,16 @@ namespace Pathing {
                 {
                     GW::YNode* yn = static_cast<GW::YNode*>(n);
                     if (point.y > yn->pos.y) {
-                        n = yn->left; // TODO: rename members in this struct from "left/right" to "above/below" like it is in opentyria
+                        n = yn->above; // TODO: rename members in this struct from "left/right" to "above/below" like it is in opentyria
                     }
                     else if (point.y < yn->pos.y) {
-                        n = yn->right;
+                        n = yn->below;
                     }
                     else if (point.x >= yn->pos.x) {
-                        n = yn->left;
+                        n = yn->above;
                     }
                     else {
-                        n = yn->right;
+                        n = yn->below;
                     }
                     break;
                 }
@@ -148,8 +148,8 @@ namespace Pathing {
                     {
                         GW::YNode* yn = static_cast<GW::YNode*>(n);
                         float d = point.y - yn->pos.y;
-                        if ((d > tolerance) || (open.push_back(yn->right), (d >= -tolerance))) {
-                            open.push_back(yn->left);
+                        if ((d > tolerance) || (open.push_back(yn->below), (d >= -tolerance))) {
+                            open.push_back(yn->above);
                         }
                         break;
                     }
