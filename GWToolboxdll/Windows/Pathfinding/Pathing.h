@@ -31,7 +31,7 @@ namespace Pathing {
         std::thread* worker_thread = nullptr;
 
     public:	
-        MilePath();
+        MilePath(GW::MapContext*);
         ~MilePath();
 
         // Signals terminate to worker thread. Usually followed late by shutdown() to grab the thread again.
@@ -64,7 +64,8 @@ namespace Pathing {
         void* GetImpl() { return opaque; };
     private:
         void LoadMapSpecificData();
-        int opaque[316 / sizeof(int)];
+
+        int opaque[336 / sizeof(int)];
     };
 
     class AStar {

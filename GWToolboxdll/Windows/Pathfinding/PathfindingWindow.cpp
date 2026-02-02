@@ -37,7 +37,7 @@ namespace {
         if (mile_paths_by_coords.contains(hash))
             return mile_paths_by_coords[hash];
 
-        auto m = new Pathing::MilePath();
+        auto m = new Pathing::MilePath(mc);
         mile_paths_by_coords[hash] = m;
         return m;
     }
