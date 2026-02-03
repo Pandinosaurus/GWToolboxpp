@@ -19,6 +19,10 @@
 #include <Modules/Resources.h>
 #include <Utils/ToolboxUtils.h>
 #include <GWCA/Context/MapContext.h>
+#include <Utils/ArenaNetFileParser.h>
+
+#include "PathingMapData.h"
+#include "PathingMapDataLoader.h"
 
 
 namespace {
@@ -56,11 +60,7 @@ namespace {
 
     std::vector<CustomRenderer::CustomLine*> minimap_lines;
 
-    void OnMapLoaded(GW::HookStatus*, GW::UI::UIMessage, void*, void*)
-    {
-        PathfindingWindow::ReadyForPathing();
-    }
-
+ 
     GW::GamePos* GetPlayerPos()
     {
         const auto p = GW::Agents::GetObservingAgent();
@@ -104,6 +104,55 @@ namespace {
             last_draw = 0;
             astar = tmpAstar;
         });
+    }
+
+    void OnUIMessage(GW::HookStatus* status, GW::UI::UIMessage message_id, void* wParam, void*)
+    {
+        if (status->blocked) return;
+        switch (message_id) {
+            case GW::UI::UIMessage::kLoadMapContext: {
+                const auto packet = (GW::UI::UIPacket::kLoadMapContext*)wParam;
+                #ifdef _DEBUG
+                // Load from map context, but also load from the DAT - save both to JSON to review and compare the data.
+                if (packet->file_name && *packet->file_name) {
+                    uint32_t map_file_id = ArenaNetFileParser::FileHashToFileId(packet->file_name);
+
+                    auto from_dat = new Pathing::PathingMapData();
+                    if (!Pathing::LoadPathingMapDataFromDAT(map_file_id, from_dat)) {
+                        delete from_dat;
+                        return;
+                    }
+                    auto from_context = new Pathing::PathingMapData();
+                    if (!Pathing::LoadFromMapContext(GW::GetMapContext(), map_file_id, from_context)) {
+                        delete from_dat;
+                        delete from_context;
+                        return;
+                    }
+                    Resources::EnqueueWorkerTask([from_dat, from_context]() {
+                        auto write_to = std::format(L"pathing_map_data_from_file_{:#}.json", from_dat->map_file_id);
+                        auto fp = fopen(Resources::GetPath(write_to).string().c_str(), "wb");
+                        if (fp) {
+                            nlohmann::json json = *from_dat;
+                            auto str = json.dump(2);
+                            fwrite(str.data(), str.size(), 1, fp);
+                            fclose(fp);
+                        }
+                        write_to = std::format(L"pathing_map_data_from_context_{:#}.json", from_context->map_file_id);
+                        fp = fopen(Resources::GetPath(write_to).string().c_str(), "wb");
+                        if (fp) {
+                            nlohmann::json json = *from_context;
+                            auto str = json.dump(2);
+                            fwrite(str.data(), str.size(), 1, fp);
+                            fclose(fp);
+                        }
+                        delete from_dat;
+                        delete from_context;
+                    });
+                }
+                #endif
+                PathfindingWindow::ReadyForPathing();
+            } break;
+        }
     }
 
 }
@@ -293,5 +342,5 @@ void PathfindingWindow::Initialize()
 {
     ToolboxWindow::Initialize();
 
-    GW::UI::RegisterUIMessageCallback(&gw_ui_hookentry, GW::UI::UIMessage::kLoadMapContext, OnMapLoaded, 0x4000);
+    GW::UI::RegisterUIMessageCallback(&gw_ui_hookentry, GW::UI::UIMessage::kLoadMapContext, OnUIMessage, 0x4000);
 }
