@@ -284,13 +284,13 @@ bool PathfindingWindow::CanTerminate()
     return true;
 }
 
-bool PathfindingWindow::CalculatePath(const GW::GamePos& from, const GW::GamePos& to, CalculatedCallback callback, void* args)
+clock_t PathfindingWindow::CalculatePath(const GW::GamePos& from, const GW::GamePos& to, CalculatedCallback callback, void* args)
 {
     if (pending_terminate)
-        return false;
+        return 0;
 
     if (!ReadyForPathing())
-        return false;
+        return 0;
 
     pending_worker_task = true;
 
@@ -326,7 +326,7 @@ bool PathfindingWindow::CalculatePath(const GW::GamePos& from, const GW::GamePos
         }
         pending_worker_task = false;
     });
-    return true;
+    return TIMER_INIT();
 }
 
 void PathfindingWindow::Terminate()

@@ -253,13 +253,12 @@ namespace Pathing {
         volatile Pathing::Error res = Pathing::Error::Unknown;
         std::mutex mutex;
         *dest = {0};
+        if (!(mapContext && mapContext->path)) {
+            return Pathing::Error::InvalidMapContext;
+        }
         // Enqueue
         GW::GameThread::Enqueue([mapContext, dest, &res, &mutex] {
             const std::lock_guard lock(mutex);
-            if (!mapContext) {
-                res = Pathing::Error::InvalidMapContext;
-                return;
-            }
             auto& block = mapContext->path->blockedPlanes;
             ASSERT(block.size() < dest->size());
             for (size_t i = 0; i < block.size(); i++) {
