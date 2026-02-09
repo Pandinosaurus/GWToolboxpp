@@ -7,7 +7,7 @@ layout: default
 Previous releases are available on Github as dll files. There is no support for older releases. If you are looking for
 the latest version, go to the [Home Page](./) instead.
 
-## Version 8.11
+## Version 8.12
 * [Fix] Fixed toolbox for gw 38127
 * [Fix] Fixed occasional incorrect path generation
 * [Fix] Fixed minimap markers not loading unless toggled on and off
